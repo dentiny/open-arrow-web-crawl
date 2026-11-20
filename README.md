@@ -6,12 +6,14 @@ Read Common Crawl's archived WARC records as Apache Arrow batches using
 ## Common Crawl example
 
 ```sh
-cargo run --example common_crawl
-cargo run --example common_crawl -- CC-MAIN-2026-43 1791170053823.21 2 1000
-cargo run --example common_crawl -- CC-MAIN-2026-43 all 1 100
+cargo run --bin common_crawl
+cargo run --bin common_crawl -- CC-MAIN-2026-43 1791170053823.21 2 1000
+cargo run --bin common_crawl -- CC-MAIN-2026-43 all 1 100
 ```
 
-[`examples/common_crawl.rs`](examples/common_crawl.rs) follows ml-infra's
+[`src/common_crawl/main.rs`](src/common_crawl/main.rs) handles CLI arguments;
+[`src/common_crawl/common_crawl.rs`](src/common_crawl/common_crawl.rs) implements
+the reader. It follows ml-infra's
 `lance/lance_migration/crates/inspector/src/provider/warc.rs`: resolve the
 crawl-wide `warc.paths.gz`, optionally filter an exact segment prefix, then
 decompress selected `.warc.gz` files and stream their records as Arrow batches.
