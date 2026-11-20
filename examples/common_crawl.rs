@@ -48,6 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Public HTTPS access needs no S3 credentials. Bind storage to the origin,
     // because warc.paths.gz lists bucket-relative keys, not manifest-relative keys.
+    opendal::install_default();
     let operator = opendal::Operator::new(opendal_service_http::Http::default().endpoint(ORIGIN))?;
     let storage = OpenDalAccessor::new(operator);
     let manifest_key = format!("crawl-data/{crawl}/warc.paths.gz");
