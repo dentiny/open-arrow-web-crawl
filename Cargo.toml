@@ -6,7 +6,7 @@ publish = false
 license = "MIT"
 
 [dependencies]
-open-arrow-access = { version = "0.16.0", features = ["decompression-gzip", "format-warc", "service-warc"] }
+open-arrow-access = { version = "0.16.0", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc"] }
 open-arrow-sink = { version = "0.6.4", features = ["sink-lance"] }
 futures = "0.3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
@@ -14,3 +14,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 [[bin]]
 name = "common_crawl"
 path = "src/common_crawl/main.rs"
+
+[[bin]]
+name = "pmc"
+path = "src/pmc/main.rs"
