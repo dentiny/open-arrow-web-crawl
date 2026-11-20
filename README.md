@@ -17,7 +17,7 @@ cargo run --locked --bin common_crawl -- ./captures.lance CC-MAIN-2026-43 179117
 1. `CommonCrawlSegmentAccessor` resolves segment membership from the crawl-wide
    `warc.paths.gz`.
 2. `CrawlAccessor::new` wraps the service accessor and executes the segment's
-   WARC files with bounded parallel reading and ordered emission. Gzip decoding
+   WARC files with bounded parallel reading and unordered emission. Gzip decoding
    is explicit for both the inventory and the archives.
 3. `open_arrow_sink::lance::LanceDatasetSink::write_all` streams batches into
    Lance and commits the dataset at EOF. It aborts best-effort on read/write errors.

@@ -30,7 +30,7 @@ pub async fn run(
     let manifests = storage.clone().layer(DecompressionLayer::new(Gzip));
     let records = WarcArrowAccessor::new(storage.layer(DecompressionLayer::new(Gzip)));
     let options = CrawlOptions::default()
-        .with_emission(EmissionPolicy::Ordered)
+        .with_emission(EmissionPolicy::Unordered)
         .with_parallel_read(ParallelReadLayer::new(
             NonZeroUsize::new(2).unwrap(),
             NonZeroUsize::new(1).unwrap(),
