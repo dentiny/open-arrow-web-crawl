@@ -15,7 +15,7 @@ use open_arrow_access::{
     },
 };
 use open_arrow_sink::{
-    CommitSummary, SinkExt, WriteOptions,
+    CommitSummary, CompressionOptions, CompressionSpec, SinkExt, WriteOptions,
     lance::{LanceDatasetSink, Url},
 };
 
@@ -41,8 +41,13 @@ pub async fn run(
         .await?;
     let schema = reader.metadata().schema.clone();
     let batches = into_stream(reader).map_err(open_arrow_sink::Error::backend);
+    let mut compression = CompressionOptions::default();
+    compression
+        .columns
+        .insert("body".into(), CompressionSpec::Lz4Raw);
+    let options = WriteOptions::default().with_compression(compression);
     let summary = LanceDatasetSink::default()
-        .write_all(destination, schema, WriteOptions::default(), batches)
+        .write_all(destination, schema, options, batches)
         .await?;
     Ok(summary)
 }
