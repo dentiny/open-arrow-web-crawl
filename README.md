@@ -1,78 +1,138 @@
 # open-arrow-web-crawl
 
-Convert Common Crawl's archived WARC captures into a Lance dataset using
-[Open Arrow Access](https://github.com/dentiny/open-arrow-access) and
-[Open Arrow Sink](https://github.com/dentiny/open-arrow-sink).
+Runnable Rust examples demonstrating how to use
+[**open-arrow-access**](https://github.com/dentiny/open-arrow-access) and
+[**open-arrow-sink**](https://github.com/dentiny/open-arrow-sink) together to ingest
+public datasets into Lance.
 
-## Common Crawl → Lance
+```text
+Data source → open-arrow-access → Arrow RecordBatch stream → open-arrow-sink → Lance
+```
+
+`open-arrow-access` discovers source files, reads and decompresses bytes, decodes
+records into typed Arrow batches, and executes reads through `CrawlAccessor`.
+`open-arrow-sink` consumes those batches, applies write policies such as column
+compression or blob downloads, and commits the destination dataset. Arrow batches
+are the interface between the two crates.
+
+Each example has a small `main.rs` for arguments and a second file containing
+the pipeline. Start with the pipeline files to see how the library APIs compose:
+
+| Example | Pipeline | What it demonstrates |
+| --- | --- | --- |
+| Common Crawl | [common_crawl.rs](src/common_crawl/common_crawl.rs) | Segment discovery, gzip WARC decoding, and LZ4 compression of binary `body` values. |
+| PMC | [pmc.rs](src/pmc/pmc.rs) | Metadata discovery, batch coalescing, field remapping, and downloading article content into Lance blobs. |
+| S2ORC v2 | [s2orc.rs](src/s2orc/s2orc.rs) | Authenticated release discovery, signed download URLs, typed JSONL decoding, and LZ4 compression of `text`. |
+
+## The shared pattern
+
+After constructing a source accessor and its request, the examples connect it
+to a sink with the same pattern:
+
+```rust
+use futures::TryStreamExt;
+use open_arrow_access::{
+    Accessor, EmissionPolicy,
+    crawl::{CrawlAccessor, CrawlOptions},
+    into_stream,
+};
+use open_arrow_sink::{SinkExt, WriteOptions, lance::LanceDatasetSink};
+
+let crawl = CrawlAccessor::new(
+    source,
+    CrawlOptions::default().with_emission(EmissionPolicy::Unordered),
+);
+let reader = crawl.open(request).await?;
+let schema = reader.metadata().schema.clone();
+let batches = into_stream(reader).map_err(open_arrow_sink::Error::backend);
+
+let summary = LanceDatasetSink::default()
+    .write_all(destination, schema, WriteOptions::default(), batches)
+    .await?;
+```
+
+Here `source` and `request` are provider-specific, and `destination` is a local
+`file://` URL. `into_stream` connects the accessor's reader to `SinkExt::write_all`;
+the error mapping preserves source errors at the sink boundary. The sink pulls
+batches with backpressure and commits at EOF, returning a `CommitSummary`.
+
+All three examples use unordered emission and bounded parallel reading. Common
+Crawl and S2ORC configure per-column `CompressionSpec::Lz4Raw` through
+`WriteOptions::with_compression`. PMC composes `SchemaEvolutionLayer` and
+`DownloadBlobLayer` around the Lance sink. These are variations on the same
+read → Arrow batches → write pipeline.
+
+## Build and try an example
+
+Use a Rust toolchain supporting edition 2024, a C/C++ toolchain, and `protoc` on
+`PATH` for the Lance dependency. [Cargo.toml](Cargo.toml) lists the enabled source
+and sink features.
 
 ```sh
-cargo run --locked --bin common_crawl
+cargo build --locked --bins
+```
+
+For a small first run, convert one public PMC article, including its PDF:
+
+```sh
+cargo run --locked --bin pmc -- ./article.lance metadata/PMC10009416.1.json
+```
+
+All examples accept a local destination path or `file://` URL and use Create
+mode, so choose a new destination for each run. They convert the complete selected
+input without file or record limits. Common Crawl and PMC need no credentials;
+S2ORC requires `S2_API_KEY`. The programs return errors directly and do not print
+conversion progress.
+
+## Common Crawl
+
+```sh
 cargo run --locked --bin common_crawl -- ./captures.lance CC-MAIN-2026-43 1791170053823.21
 ```
 
-[`src/common_crawl/main.rs`](src/common_crawl/main.rs) handles the CLI.
-[`src/common_crawl/common_crawl.rs`](src/common_crawl/common_crawl.rs) composes:
+Arguments: `[DESTINATION] [CRAWL] [SEGMENT]`. Defaults are
+`./common-crawl.lance`, `CC-MAIN-2026-43`, and `1791170053823.21`.
 
-1. `CommonCrawlSegmentAccessor` resolves segment membership from the crawl-wide
-   `warc.paths.gz`.
-2. `CrawlAccessor::new` wraps the service accessor and executes the segment's
-   WARC files with bounded parallel reading and unordered emission. Gzip decoding
-   is explicit for both the inventory and the archives.
-3. `open_arrow_sink::lance::LanceDatasetSink::write_all` streams batches into
-   Lance and commits the dataset at EOF. It aborts best-effort on read/write errors.
+`CommonCrawlSegmentAccessor` selects the segment's files from the crawl-wide
+`warc.paths.gz`. Inventory and archive gzip decoding are configured separately.
+`CrawlAccessor` reads all selected WARC files, and the Lance sink stores the
+binary `body` column with LZ4 compression.
 
-Arguments are the local destination path (or `file://` URL), crawl ID, and segment
-ID. Defaults are `./common-crawl.lance`,
-`CC-MAIN-2026-43`, and `1791170053823.21`. Every file and record in the selected
-segment is converted. The sink uses Create mode, so use a new
-destination for each run. Public HTTPS input needs no credentials.
+Each output row is a physical WARC record, including requests, responses,
+metadata and revisits. Bodies can contain HTTP headers and HTML; text extraction
+and filtering can be added downstream. See [main.rs](src/common_crawl/main.rs)
+for the entry point.
 
-Batches stream from the accessor to the sink without collecting the dataset in
-memory. The conversion returns the sink's commit summary.
-
-One row is one physical WARC record, including requests, responses, metadata and
-revisits. Headers and binary bodies are preserved in Lance. The `body` column
-uses LZ4 compression. Bodies can contain
-HTTP headers and HTML; text extraction, page filtering and deduplication remain
-separate downstream steps.
-
-Building the Lance dependency requires a C/C++ toolchain and `protoc` on `PATH`.
-
-## PMC → Lance
+## PMC
 
 ```sh
-cargo run --locked --bin pmc
 cargo run --locked --bin pmc -- ./article.lance metadata/PMC10009416.1.json
 cargo run --locked --bin pmc -- ./articles.lance metadata/
 ```
 
-[`src/pmc/main.rs`](src/pmc/main.rs) reads the destination and bucket-relative
-source key. [`src/pmc/pmc.rs`](src/pmc/pmc.rs) follows the conversion service's
-PMC pipeline: `PmcDatasetAccessor` → unordered `CrawlAccessor` → rename
-`content_url` to `content` → `DownloadBlobLayer` → `LanceDatasetSink`.
-Metadata batches coalesce to 64 rows. The public PMC bucket is accessed
-anonymously in `us-east-1` and registered with the sink for article downloads.
+Arguments: `[DESTINATION] [SOURCE_KEY] [MANIFEST_KEY]`. Defaults are
+`./pmc.lance`, `metadata/PMC10009416.1.json`, and no manifest. Keys are relative to
+the public `pmc-oa-opendata` bucket.
 
-The default input is one article's metadata JSON, with PDF selected as in the
-service's default configuration. A `metadata/` prefix reads every matching
-article. All upstream metadata columns are retained; `content_url` becomes the
-Lance `content` blob containing the downloaded PDF, rather than a URL reference.
-Rows with missing or failed PDF downloads are skipped, matching the service's
-default recovery policy. Create mode requires a new destination.
-
-For an inventory shard, pass its bucket-relative `.csv.gz` key as the source
-and its manifest key as the third argument:
+`PmcDatasetAccessor` reads one metadata object or discovers a metadata directory.
+With a manifest, `PmcInventoryShardAccessor` reads the selected inventory shard
+and the article metadata it names:
 
 ```sh
 cargo run --locked --bin pmc -- ./shard.lance "$PMC_SHARD_KEY" "$PMC_MANIFEST_KEY"
 ```
 
-Set these keys from a published PMC inventory manifest. This uses
-`PmcInventoryShardAccessor` to read only that shard and the metadata it names;
-the library verifies shard membership. Use a distinct output for each shard.
+Set these two keys from a published PMC inventory manifest and use a separate
+output for each shard.
 
-## S2ORC v2 → Lance
+The example coalesces metadata batches to 64 rows, renames `content_url` to
+`content`, and selects that column with `DownloadBlobLayer`. The same anonymous
+PMC S3 operator is registered with the sink for PDF downloads. Metadata fields
+are retained, while `content` becomes a Lance blob containing the PDF bytes.
+Missing or failed PDF downloads skip their rows using `DownloadFailurePolicy::SkipRow`.
+See [main.rs](src/pmc/main.rs) for the entry point.
+
+## S2ORC v2
 
 Set `S2_API_KEY` to your Semantic Scholar Datasets API key, then run:
 
@@ -81,23 +141,17 @@ cargo run --locked --bin s2orc -- ./s2orc.lance latest part-00000
 cargo run --locked --bin s2orc -- ./release-part.lance 2026-11-10 part-00001
 ```
 
-[`src/s2orc/main.rs`](src/s2orc/main.rs) reads the destination, release and logical
-file name. Defaults are `./s2orc.lance`, `latest` and `part-00000`.
-[`src/s2orc/s2orc.rs`](src/s2orc/s2orc.rs) follows the conversion service's
-`semantic_scholar` provider: `SemanticScholarService::dataset` resolves the release
-and signed S2ORC v2 URLs, explicit `DecompressionLayer<Gzip>` decodes the selected
-file, and `S2orcV2Accessor` supplies typed records to an unordered `CrawlAccessor`.
-Batches stream into `LanceDatasetSink::write_all` and commit at EOF.
+Arguments: `[DESTINATION] [RELEASE] [FILE_NAME]`. Defaults are `./s2orc.lance`,
+`latest`, and `part-00000`.
 
-`part-00000`, `part-00001`, etc. are library-assigned names in manifest order.
-They have no gzip suffix, so decompression is explicit. Each invocation converts
-one complete file; use a separate destination for each file. `latest` resolves
-once per invocation; pass a pinned release ID for repeatable multi-file runs.
-The sink uses Create mode and requires a new destination.
+`SemanticScholarService::dataset` resolves the release and binds signed URLs to
+logical names such as `part-00000`, assigned in manifest order. Gzip decoding is
+explicit because these names have no compression suffix. `S2orcV2Accessor`
+decodes the selected file into seven typed columns: `corpusid`, `openaccessinfo`,
+`title`, `authors`, `body`, `bibliography`, and `text`.
 
-The seven typed output columns are `corpusid`, `openaccessinfo`, `title`,
-`authors`, `body`, `bibliography` and `text` as defined by the accessor's schema.
-Body text is extracted to top-level `text` and stored with LZ4 compression;
-nested structs, lists and typed
-annotation spans remain Arrow columns in Lance. This writes S2ORC's parsed records;
-it does not download PDFs or join the separate papers/abstracts datasets.
+Body text is extracted to top-level `text` and stored with LZ4 compression.
+Nested metadata, lists and annotation spans retain their Arrow types in Lance.
+Each invocation converts one complete file. Pin a release ID and use separate
+outputs when converting multiple files; `latest` resolves once per invocation.
+See [main.rs](src/s2orc/main.rs) for the entry point.
