@@ -1,0 +1,16 @@
+[package]
+name = "open-arrow-web-crawl"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[dev-dependencies]
+open-arrow-access = { version = "0.16.0", features = ["decompression-gzip", "format-warc"] }
+opendal = { version = "0.59.5", default-features = false, features = ["http-transport-reqwest"] }
+opendal-service-http = "0.59.5"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[[example]]
+name = "common_crawl"
+path = "examples/common_crawl.rs"
