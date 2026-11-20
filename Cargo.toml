@@ -1,0 +1,16 @@
+[package]
+name = "open-arrow-web-crawl"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[dependencies]
+open-arrow-access = { version = "0.16.0", features = ["decompression-gzip", "format-warc", "service-warc"] }
+open-arrow-sink = { version = "0.6.4", features = ["sink-lance"] }
+futures = "0.3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[[bin]]
+name = "common_crawl"
+path = "src/common_crawl/main.rs"
