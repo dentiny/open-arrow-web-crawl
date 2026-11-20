@@ -33,7 +33,7 @@ new destination for each run. Public HTTPS input needs no credentials.
 The full inventory is resolved before applying the file limit. Record limits
 bound committed rows, not exact download bytes, and are not resumable shards.
 Batches stream from the accessor to the sink without collecting the dataset in
-memory. The program prints the sink's actual committed row count.
+memory. The conversion returns the sink's commit summary.
 
 One row is one physical WARC record, including requests, responses, metadata and
 revisits. Headers and binary bodies are preserved in Lance. Bodies can contain

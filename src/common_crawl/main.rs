@@ -8,15 +8,20 @@
 mod common_crawl;
 
 use open_arrow_sink::lance::Url;
-use std::{env, error::Error, io, num::NonZeroUsize};
+use std::{
+    env,
+    error::Error,
+    io::{self, Write},
+    num::NonZeroUsize,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.len() > 5 || args.iter().any(|arg| arg == "--help" || arg == "-h") {
-        println!(
-            "Usage: cargo run --bin common_crawl -- [DESTINATION] [CRAWL] [SEGMENT|all] [MAX_FILES] [MAX_RECORDS]"
-        );
+        io::stdout().write_all(
+            b"Usage: cargo run --bin common_crawl -- [DESTINATION] [CRAWL] [SEGMENT|all] [MAX_FILES] [MAX_RECORDS]\n",
+        )?;
         if args.len() > 5 {
             return Err(io::Error::other("too many arguments").into());
         }

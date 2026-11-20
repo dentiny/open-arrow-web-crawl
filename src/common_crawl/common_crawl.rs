@@ -31,7 +31,6 @@ pub async fn run(
     max_files: NonZeroUsize,
     max_records: NonZeroUsize,
 ) -> Result<CommitSummary, Box<dyn Error>> {
-    println!("Lance destination: {destination}");
     let storage = create_http_accessor(ORIGIN)?;
     // Service accessors expect decoded inventory bytes. Archive decoding is
     // configured separately on the WARC format, using the same bound storage.
@@ -46,7 +45,6 @@ pub async fn run(
             .resolve(CommonCrawlSegmentRequest::new(crawl, segment)?)
             .await?
     };
-    println!("Selected {} WARC files", files.objects.len());
     // Limit explicit membership before execution; the service still resolves
     // the full inventory. File limits and scan-wide record limits are distinct.
     files.objects.truncate(max_files.get());
@@ -77,7 +75,6 @@ pub async fn run(
     let summary = LanceDatasetSink::default()
         .write_all(destination, schema, WriteOptions::default(), batches)
         .await?;
-    println!("Committed {} WARC records to Lance", summary.rows_committed);
     // These are physical WARC records with binary bodies, not cleaned web text.
     Ok(summary)
 }
