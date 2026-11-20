@@ -2,7 +2,7 @@
 //! lance_migration WARC provider. This reads existing captures, not live websites.
 //!
 //! cargo run --bin common_crawl -- ./common-crawl.lance CC-MAIN-2026-43 1791170053823.21
-//! Arguments: destination path/file URL, crawl ID, segment ID (or `all`).
+//! Arguments: destination path/file URL, crawl ID, segment ID.
 //! Defaults: ./common-crawl.lance, the crawl/segment above.
 
 mod common_crawl;
@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
     if args.len() > 3 || args.iter().any(|arg| arg == "--help" || arg == "-h") {
         io::stdout().write_all(
-            b"Usage: cargo run --bin common_crawl -- [DESTINATION] [CRAWL] [SEGMENT|all]\n",
+            b"Usage: cargo run --bin common_crawl -- [DESTINATION] [CRAWL] [SEGMENT]\n",
         )?;
         if args.len() > 3 {
             return Err(io::Error::other("too many arguments").into());
@@ -45,9 +45,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or("1791170053823.21");
     // IDs are single path components, not URLs or arbitrary prefixes.
     if !crawl.starts_with("CC-MAIN-") || !valid_id(crawl) || !valid_id(segment) {
-        return Err(
-            io::Error::other("expected a CC-MAIN crawl ID and a segment ID (or all)").into(),
-        );
+        return Err(io::Error::other("expected a CC-MAIN crawl ID and a segment ID").into());
     }
 
     common_crawl::run(destination, crawl, segment).await?;

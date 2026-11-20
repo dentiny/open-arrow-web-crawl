@@ -10,11 +10,8 @@ use open_arrow_access::{
     file_format::warc::WarcArrowAccessor,
     into_stream,
     layers::ParallelReadLayer,
-    service::{
-        commoncrawl::{
-            CommonCrawlSegmentAccessor, CommonCrawlSegmentRequest, create_http_accessor,
-        },
-        warc::{CommonCrawlWarcAccessor, CommonCrawlWarcRequest},
+    service::commoncrawl::{
+        CommonCrawlSegmentAccessor, CommonCrawlSegmentRequest, create_http_accessor,
     },
 };
 use open_arrow_sink::{
@@ -40,17 +37,10 @@ pub async fn run(
             NonZeroUsize::new(2).unwrap(),
             NonZeroUsize::new(1).unwrap(),
         ));
-    let reader = if segment == "all" {
-        let source = CommonCrawlWarcAccessor::new(manifests, records).with_file_planning();
-        CrawlAccessor::new(source, options)
-            .open(CommonCrawlWarcRequest::new(crawl)?)
-            .await?
-    } else {
-        let source = CommonCrawlSegmentAccessor::new(manifests, records).with_file_planning();
-        CrawlAccessor::new(source, options)
-            .open(CommonCrawlSegmentRequest::new(crawl, segment)?)
-            .await?
-    };
+    let source = CommonCrawlSegmentAccessor::new(manifests, records).with_file_planning();
+    let reader = CrawlAccessor::new(source, options)
+        .open(CommonCrawlSegmentRequest::new(crawl, segment)?)
+        .await?;
     let schema = reader.metadata().schema.clone();
     // Stream directly to the sink; it pulls batches with backpressure.
     let batches = into_stream(reader).map_err(open_arrow_sink::Error::backend);
