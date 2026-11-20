@@ -71,3 +71,33 @@ cargo run --locked --bin pmc -- ./shard.lance "$PMC_SHARD_KEY" "$PMC_MANIFEST_KE
 Set these keys from a published PMC inventory manifest. This uses
 `PmcInventoryShardAccessor` to read only that shard and the metadata it names;
 the library verifies shard membership. Use a distinct output for each shard.
+
+## S2ORC v2 → Lance
+
+Set `S2_API_KEY` to your Semantic Scholar Datasets API key, then run:
+
+```sh
+cargo run --locked --bin s2orc -- ./s2orc.lance latest part-00000
+cargo run --locked --bin s2orc -- ./release-part.lance 2026-11-10 part-00001
+```
+
+[`src/s2orc/main.rs`](src/s2orc/main.rs) reads the destination, release and logical
+file name. Defaults are `./s2orc.lance`, `latest` and `part-00000`.
+[`src/s2orc/s2orc.rs`](src/s2orc/s2orc.rs) follows the conversion service's
+`semantic_scholar` provider: `SemanticScholarService::dataset` resolves the release
+and signed S2ORC v2 URLs, explicit `DecompressionLayer<Gzip>` decodes the selected
+file, and `S2orcV2Accessor` supplies typed records to an unordered `CrawlAccessor`.
+Batches stream into `LanceDatasetSink::write_all` and commit at EOF.
+
+`part-00000`, `part-00001`, etc. are library-assigned names in manifest order.
+They have no gzip suffix, so decompression is explicit. Each invocation converts
+one complete file; use a separate destination for each file. `latest` resolves
+once per invocation; pass a pinned release ID for repeatable multi-file runs.
+The sink uses Create mode and requires a new destination.
+
+The seven typed output columns are `corpusid`, `openaccessinfo`, `title`,
+`authors`, `body`, `bibliography` and `text` as defined by the accessor's schema.
+Body text is extracted to top-level `text` and stored with LZ4 compression;
+nested structs, lists and typed
+annotation spans remain Arrow columns in Lance. This writes S2ORC's parsed records;
+it does not download PDFs or join the separate papers/abstracts datasets.
