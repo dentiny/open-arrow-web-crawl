@@ -4,12 +4,12 @@ use std::{error::Error, num::NonZeroUsize};
 
 use futures::TryStreamExt;
 use open_arrow_access::{
-    Accessor, AccessorExt, EmissionPolicy, ReadOptions,
+    Accessor, AccessorExt, EmissionPolicy,
     crawl::{CrawlAccessor, CrawlOptions},
     decompression::{DecompressionLayer, gzip::Gzip},
     file_format::warc::WarcArrowAccessor,
     into_stream,
-    layers::{LimitLayer, ParallelReadLayer},
+    layers::ParallelReadLayer,
     service::{
         commoncrawl::{
             CommonCrawlSegmentAccessor, CommonCrawlSegmentRequest, create_http_accessor,
@@ -28,45 +28,30 @@ pub async fn run(
     destination: Url,
     crawl: &str,
     segment: &str,
-    max_files: NonZeroUsize,
-    max_records: NonZeroUsize,
 ) -> Result<CommitSummary, Box<dyn Error>> {
     let storage = create_http_accessor(ORIGIN)?;
     // Service accessors expect decoded inventory bytes. Archive decoding is
     // configured separately on the WARC format, using the same bound storage.
     let manifests = storage.clone().layer(DecompressionLayer::new(Gzip));
     let records = WarcArrowAccessor::new(storage.layer(DecompressionLayer::new(Gzip)));
-    let mut files = if segment == "all" {
-        CommonCrawlWarcAccessor::new(manifests, records.clone())
-            .resolve(CommonCrawlWarcRequest::new(crawl)?)
+    let options = CrawlOptions::default()
+        .with_emission(EmissionPolicy::Ordered)
+        .with_parallel_read(ParallelReadLayer::new(
+            NonZeroUsize::new(2).unwrap(),
+            NonZeroUsize::new(1).unwrap(),
+        ));
+    let reader = if segment == "all" {
+        let source = CommonCrawlWarcAccessor::new(manifests, records).with_file_planning();
+        CrawlAccessor::new(source, options)
+            .open(CommonCrawlWarcRequest::new(crawl)?)
             .await?
     } else {
-        CommonCrawlSegmentAccessor::new(manifests, records.clone())
-            .resolve(CommonCrawlSegmentRequest::new(crawl, segment)?)
+        let source = CommonCrawlSegmentAccessor::new(manifests, records).with_file_planning();
+        CrawlAccessor::new(source, options)
+            .open(CommonCrawlSegmentRequest::new(crawl, segment)?)
             .await?
     };
-    // Limit explicit membership before execution; the service still resolves
-    // the full inventory. File limits and scan-wide record limits are distinct.
-    files.objects.truncate(max_files.get());
-    files = files.with_options(ReadOptions {
-        batch_size: NonZeroUsize::new(max_records.get().min(100)).unwrap(),
-        ..ReadOptions::default()
-    });
-    let crawl = CrawlAccessor::files(
-        records,
-        CrawlOptions::default()
-            .with_emission(EmissionPolicy::Ordered)
-            .with_parallel_read(ParallelReadLayer::new(
-                NonZeroUsize::new(2).unwrap(),
-                NonZeroUsize::new(1).unwrap(),
-            )),
-    );
-    let reader = crawl
-        .layer(LimitLayer::new(max_records.get().try_into()?))
-        .open(files)
-        .await?;
     let schema = reader.metadata().schema.clone();
-    // LimitLayer is outside the crawl, so its budget covers the merged scan.
     // Stream directly to the sink; it pulls batches with backpressure.
     let batches = into_stream(reader).map_err(open_arrow_sink::Error::backend);
     // write_all opens once, streams batches and commits at EOF. Read/write
