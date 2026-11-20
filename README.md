@@ -32,7 +32,8 @@ Batches stream from the accessor to the sink without collecting the dataset in
 memory. The conversion returns the sink's commit summary.
 
 One row is one physical WARC record, including requests, responses, metadata and
-revisits. Headers and binary bodies are preserved in Lance. Bodies can contain
+revisits. Headers and binary bodies are preserved in Lance. The `body` column
+uses LZ4 compression. Bodies can contain
 HTTP headers and HTML; text extraction, page filtering and deduplication remain
 separate downstream steps.
 
