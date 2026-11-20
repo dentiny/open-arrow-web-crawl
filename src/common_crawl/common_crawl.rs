@@ -27,8 +27,6 @@ pub async fn run(
     segment: &str,
 ) -> Result<CommitSummary, Box<dyn Error>> {
     let storage = create_http_accessor(ORIGIN)?;
-    // Service accessors expect decoded inventory bytes. Archive decoding is
-    // configured separately on the WARC format, using the same bound storage.
     let manifests = storage.clone().layer(DecompressionLayer::new(Gzip));
     let records = WarcArrowAccessor::new(storage.layer(DecompressionLayer::new(Gzip)));
     let options = CrawlOptions::default()
@@ -42,14 +40,9 @@ pub async fn run(
         .open(CommonCrawlSegmentRequest::new(crawl, segment)?)
         .await?;
     let schema = reader.metadata().schema.clone();
-    // Stream directly to the sink; it pulls batches with backpressure.
     let batches = into_stream(reader).map_err(open_arrow_sink::Error::backend);
-    // write_all opens once, streams batches and commits at EOF. Read/write
-    // failures trigger best-effort abort. Default Create mode rejects an
-    // occupied destination; this example never overwrites an existing dataset.
     let summary = LanceDatasetSink::default()
         .write_all(destination, schema, WriteOptions::default(), batches)
         .await?;
-    // These are physical WARC records with binary bodies, not cleaned web text.
     Ok(summary)
 }

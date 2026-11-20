@@ -43,7 +43,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .get(2)
         .map(String::as_str)
         .unwrap_or("1791170053823.21");
-    // IDs are single path components, not URLs or arbitrary prefixes.
     if !crawl.starts_with("CC-MAIN-") || !valid_id(crawl) || !valid_id(segment) {
         return Err(io::Error::other("expected a CC-MAIN crawl ID and a segment ID").into());
     }
