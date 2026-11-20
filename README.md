@@ -97,6 +97,7 @@ The sink uses Create mode and requires a new destination.
 
 The seven typed output columns are `corpusid`, `openaccessinfo`, `title`,
 `authors`, `body`, `bibliography` and `text` as defined by the accessor's schema.
-Body text is extracted to top-level `text`; nested structs, lists and typed
+Body text is extracted to top-level `text` and stored with LZ4 compression;
+nested structs, lists and typed
 annotation spans remain Arrow columns in Lance. This writes S2ORC's parsed records;
 it does not download PDFs or join the separate papers/abstracts datasets.
