@@ -22,6 +22,7 @@ the pipeline. Start with the pipeline files to see how the library APIs compose:
 | --- | --- | --- |
 | Common Crawl | [common_crawl.rs](src/common_crawl/common_crawl.rs) | Segment discovery, gzip WARC decoding, and LZ4 compression of binary `body` values. |
 | PMC | [pmc.rs](src/pmc/pmc.rs) | Metadata discovery, batch coalescing, field remapping, and downloading article content into Lance blobs. |
+| BHL | [bhl.rs](src/bhl/bhl.rs) | Native item/part discovery, shared read-only metadata and one OCR page per row. |
 | arXiv | [arxiv.rs](src/arxiv/arxiv.rs) | Stream one official source/PDF TAR shard into typed content with automatic OAI metadata. |
 | S2ORC v2 | [s2orc.rs](src/s2orc/s2orc.rs) | Authenticated release discovery, signed download URLs, typed JSONL decoding, and LZ4 compression of `text`. |
 
@@ -157,7 +158,7 @@ Each invocation converts one complete file. Pin a release ID and use separate
 outputs when converting multiple files; `latest` resolves once per invocation.
 See [main.rs](src/s2orc/main.rs) for the entry point.
 
-## arXiv with open-arrow-access 0.20.0
+## arXiv with open-arrow-access 0.20.1
 
 Convert one complete official arXiv TAR shard using your normal AWS credential
 configuration. The bucket requires signed requester-pays access:
@@ -176,5 +177,27 @@ packages remain errors in this strict example; no PDF fallback or silent skip is
 configured.
 
 Existing Common Crawl, PMC and S2ORC pipelines keep their OpenDAL/planning paths.
-Provider Connection downloads in 0.20.0 are sequential; formats requiring random
+Provider Connection downloads in 0.20.1 are sequential; formats requiring random
 access need an OpenDAL-backed or custom ranged source.
+
+## BHL with the native shard accessor
+
+Create a complete metadata database once, then reuse it for each item/part shard:
+
+```sh
+cargo run --locked --bin bhl -- create-metadata ./bhl-metadata.duckdb
+cargo run --locked --bin bhl -- ./bhl-item-295621.lance ocr/item-295621/ ./bhl-metadata.duckdb
+```
+
+Creation imports all 13 official tables and closes the writers before returning.
+Use a new path; discard incomplete files after a failed import before retrying.
+Shard scans use `BhlShardAccessor::from_database` and `BhlShardReadRequest` from
+open-arrow-access 0.20.1. The library opens the completed file read-only, validates
+the prefix, discovers every listing page, excludes the aggregate TXT, and joins
+metadata. CrawlAccessor owns concurrency and backpressure. The example contains
+no custom listing, identity parser or metadata reconciliation callback.
+
+OCR bytes, empty pages and all metadata lists retain their original values.
+Missing/conflicting metadata fails under the library's strict default. The
+metadata fingerprint labels the rows; it does not freeze the live OCR bucket.
+Multiple jobs can share a completed snapshot mounted at their local database path.
