@@ -22,6 +22,7 @@ the pipeline. Start with the pipeline files to see how the library APIs compose:
 | --- | --- | --- |
 | Common Crawl | [common_crawl.rs](src/common_crawl/common_crawl.rs) | Segment discovery, gzip WARC decoding, and LZ4 compression of binary `body` values. |
 | PMC | [pmc.rs](src/pmc/pmc.rs) | Metadata discovery, batch coalescing, field remapping, and downloading article content into Lance blobs. |
+| arXiv | [arxiv.rs](src/arxiv/arxiv.rs) | Stream one official source/PDF TAR shard into typed content with automatic OAI metadata. |
 | S2ORC v2 | [s2orc.rs](src/s2orc/s2orc.rs) | Authenticated release discovery, signed download URLs, typed JSONL decoding, and LZ4 compression of `text`. |
 
 ## The shared pattern
@@ -56,7 +57,7 @@ Here `source` and `request` are provider-specific, and `destination` is a local
 the error mapping preserves source errors at the sink boundary. The sink pulls
 batches with backpressure and commits at EOF, returning a `CommitSummary`.
 
-All three examples use unordered emission and bounded parallel reading. Common
+The conversion examples use unordered emission and bounded parallel reading. Common
 Crawl and S2ORC configure per-column `CompressionSpec::Lz4Raw` through
 `WriteOptions::with_compression`. PMC composes `SchemaEvolutionLayer` and
 `DownloadBlobLayer` around the Lance sink. These are variations on the same
@@ -155,3 +156,25 @@ Nested metadata, lists and annotation spans retain their Arrow types in Lance.
 Each invocation converts one complete file. Pin a release ID and use separate
 outputs when converting multiple files; `latest` resolves once per invocation.
 See [main.rs](src/s2orc/main.rs) for the entry point.
+
+## arXiv with open-arrow-access 0.20.0
+
+Convert one complete official arXiv TAR shard using your normal AWS credential
+configuration. The bucket requires signed requester-pays access:
+
+```sh
+cargo run --locked --bin arxiv -- ./arxiv-source.lance src/arXiv_src_9107_001.tar latex
+cargo run --locked --bin arxiv -- ./arxiv-pdf.lance pdf/arXiv_pdf_9107_001.tar pdf
+```
+
+The source route emits one row per selected TeX file; PDF emits one row per
+article. Both retain automatic typed OAI metadata, whose official requests share
+the upstream three-second limiter. Explicit shards are streamed sequentially,
+without range-based re-downloads. Legacy standalone TeX and GNU TAR long names
+are supported. Missing LaTeX (PDF/PostScript/DVI-only packages) and corrupt source
+packages remain errors in this strict example; no PDF fallback or silent skip is
+configured.
+
+Existing Common Crawl, PMC and S2ORC pipelines keep their OpenDAL/planning paths.
+Provider Connection downloads in 0.20.0 are sequential; formats requiring random
+access need an OpenDAL-backed or custom ranged source.

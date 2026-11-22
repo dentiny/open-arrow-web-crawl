@@ -673,9 +673,9 @@ dependencies = [
 
 [[package]]
 name = "comfy-table"
-version = "7.2.2"
+version = "7.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "958c5d6ecf1f214b4c2bbbbf6ab9523a864bd136dcf71a7e8904799acfe1ad47"
+checksum = "4a65ebfec4fb190b6f90e944a817d60499ee0744e582530e2c9900a22e591d9a"
 dependencies = [
  "unicode-segmentation",
  "unicode-width",
@@ -3702,9 +3702,9 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
 name = "open-arrow-access"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "accf47978f0890ecf75aa403e2774e5f9a6a70b6b251e3996a43b0d34d3a103c"
+checksum = "4fb747a68c825501c6e96bda80a88a95042d06c9c426ac0a87190cbd99b89b2a"
 dependencies = [
  "arrow-schema",
  "futures",
@@ -3719,9 +3719,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-core"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07794b4f2529c9a7731e80c95d110f9f5a8546b3a1219f6bdac49e5aaac3a49a"
+checksum = "dd2e3ac9939b459f014ba8f0467dab071cb1cd018c94dacbe5c318aa5ab2b3af"
 dependencies = [
  "arrow-array",
  "arrow-schema",
@@ -3734,9 +3734,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-dataset"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc4b4707239ce2f79ae5046a6d3f5826dbbc46b4fc18cb4140e56aaf6ab67ae5"
+checksum = "996a7de7c9c6cf1db98e945cb405b8961b7da35111ac1fd5ce4113ef44fba78f"
 dependencies = [
  "arrow-array",
  "arrow-schema",
@@ -3751,9 +3751,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-decompression"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36bb510765ae62f18de9ca85a98e8b4ef72e24d3ee2ed76112cbf5579b4ccf8c"
+checksum = "3496478debab16eefa6c59d5bcf16a69059998062946fd36d68871d566ae51c6"
 dependencies = [
  "async-compression",
  "futures",
@@ -3763,9 +3763,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-file-format"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c66970ecf169275c9e96fbcc4442fa6c36dc4f4d53606abaa935eb26c93ee675"
+checksum = "07103dac82160536d85cff64708be4f6c449d4ed554a254aa988b7ea949f8844"
 dependencies = [
  "arrow-array",
  "arrow-csv",
@@ -3782,13 +3782,14 @@ dependencies = [
  "regex",
  "serde_json",
  "warc-rs",
+ "xml-arrow",
 ]
 
 [[package]]
 name = "open-arrow-access-layers"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dc1d5c1e98b3b52445ef43bf4edcaeb9ec7bcbcf3dc5861fef45bacdfce8f4e"
+checksum = "39a20fa0da158800a6ab590ab4dcda47e3bc6b0dbb13100e0b0714fae8cfc492"
 dependencies = [
  "arrow-array",
  "arrow-buffer",
@@ -3804,13 +3805,14 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-service"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "348cabe34f52174a8e592325ee1ad1484d8d0ec7afbec0f70ffa2411f32151d5"
+checksum = "3be23004d2b2d88c019aeeb683e3b29c9ecdee508948127f516b888ec307351e"
 dependencies = [
  "arrow-array",
  "arrow-json",
  "arrow-schema",
+ "arrow-select",
  "backon",
  "futures",
  "http",
@@ -3825,6 +3827,7 @@ dependencies = [
  "opendal-http-transport-reqwest",
  "opendal-service-http",
  "percent-encoding",
+ "quick-xml 0.42.0",
  "reqwest 0.13.5",
  "serde",
  "serde_json",
@@ -3834,9 +3837,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-storage"
-version = "0.18.1"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6a63d6c299abaf0f6f7aa289e7218e67fd29e333acf23af9e5264a3fa7e5f60"
+checksum = "daceb6fc418fbba3acbe74a44de5b6679f8b240682138220770e424a58af674e"
 dependencies = [
  "futures",
  "http",
@@ -3980,7 +3983,7 @@ dependencies = [
  "log",
  "md-5",
  "percent-encoding",
- "quick-xml",
+ "quick-xml 0.42.0",
  "reqsign-core",
  "serde",
  "serde_json",
@@ -4075,7 +4078,7 @@ dependencies = [
  "log",
  "md-5",
  "opendal-core",
- "quick-xml",
+ "quick-xml 0.42.0",
  "reqsign-aws-v4",
  "reqsign-core",
  "reqsign-file-read-tokio",
@@ -4344,6 +4347,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f29a7c4c7a84cef41a53d338a2d10d4f1b043ea5c3dde26db22ee2c9c1b1c75b"
 dependencies = [
  "prost",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.41.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e660451e55124f798a69a5af3f49ccfbefbd41910eefd25caf2393e1f3473ec1"
+dependencies = [
+ "memchr",
+ "tokio",
 ]
 
 [[package]]
@@ -4629,7 +4642,7 @@ dependencies = [
  "http",
  "log",
  "percent-encoding",
- "quick-xml",
+ "quick-xml 0.42.0",
  "reqsign-core",
  "rust-ini",
  "serde",
@@ -4647,7 +4660,7 @@ dependencies = [
  "bytes",
  "http",
  "log",
- "quick-xml",
+ "quick-xml 0.42.0",
  "reqsign-aws-core",
  "reqsign-core",
  "serde",
@@ -4790,6 +4803,15 @@ checksum = "18bd8a37d17a58532776dcdf6041ce64929adca78e8489d5cacbafe99229d3e1"
 dependencies = [
  "bytemuck",
  "byteorder",
+]
+
+[[package]]
+name = "roxmltree"
+version = "0.21.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9da7f59328b09405b181fee1018925fad50f157afb43c0c0f5c522c256dd5907"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]
@@ -5530,6 +5552,7 @@ checksum = "e464cf451ba96ebfc6f9b6542f17ee8b8956e33f1e40d9690624e59d7a7f8a4b"
 dependencies = [
  "bytes",
  "futures-core",
+ "futures-io",
  "futures-sink",
  "libc",
  "pin-project-lite",
@@ -6169,6 +6192,21 @@ checksum = "963d6fab92d5504b971dc8bd90ca743c2575e590bc8071ea5bc571598667ae08"
 dependencies = [
  "libc",
  "rustix",
+]
+
+[[package]]
+name = "xml-arrow"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "527e65da26d90803d624cc2c65d1b793d57f27517137042e6e442e7d3bb060de"
+dependencies = [
+ "arrow-array",
+ "arrow-schema",
+ "futures-util",
+ "quick-xml 0.41.0",
+ "roxmltree",
+ "thiserror",
+ "tokio-util",
 ]
 
 [[package]]
