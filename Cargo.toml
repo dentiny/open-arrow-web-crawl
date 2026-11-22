@@ -6,7 +6,7 @@ publish = false
 license = "MIT"
 
 [dependencies]
-open-arrow-access = { version = "0.18.1", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc", "service-semantic-scholar"] }
+open-arrow-access = { version = "0.20.0", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc", "service-semantic-scholar", "service-arxiv", "service-bhl"] }
 open-arrow-sink = { version = "0.6.4", features = ["sink-lance"] }
 futures = "0.3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
@@ -22,3 +22,11 @@ path = "src/pmc/main.rs"
 [[bin]]
 name = "s2orc"
 path = "src/s2orc/main.rs"
+
+[[bin]]
+name = "arxiv"
+path = "src/arxiv/main.rs"
+
+[[bin]]
+name = "bhl"
+path = "src/bhl/main.rs"
