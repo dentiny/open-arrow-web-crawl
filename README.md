@@ -22,7 +22,6 @@ the pipeline. Start with the pipeline files to see how the library APIs compose:
 | --- | --- | --- |
 | Common Crawl | [common_crawl.rs](src/common_crawl/common_crawl.rs) | Segment discovery, gzip WARC decoding, and LZ4 compression of binary `body` values. |
 | PMC | [pmc.rs](src/pmc/pmc.rs) | Metadata discovery, batch coalescing, field remapping, and downloading article content into Lance blobs. |
-| BHL | [bhl.rs](src/bhl/bhl.rs) | Create one persistent metadata database, reopen it read-only, discover one complete item/part OCR directory and preserve joined metadata lists. |
 | arXiv | [arxiv.rs](src/arxiv/arxiv.rs) | Stream one official source/PDF TAR shard into typed content with automatic OAI metadata. |
 | S2ORC v2 | [s2orc.rs](src/s2orc/s2orc.rs) | Authenticated release discovery, signed download URLs, typed JSONL decoding, and LZ4 compression of `text`. |
 
@@ -158,27 +157,7 @@ Each invocation converts one complete file. Pin a release ID and use separate
 outputs when converting multiple files; `latest` resolves once per invocation.
 See [main.rs](src/s2orc/main.rs) for the entry point.
 
-## BHL and arXiv with open-arrow-access 0.20.0
-
-Create the BHL metadata database once, then reuse the completed file for each
-natural OCR shard. Database creation imports all 13 official tables and closes
-all writers before returning. Choose a new database path; a failed import may
-leave an incomplete file that must be discarded before retrying.
-
-```sh
-cargo run --locked --bin bhl -- create-metadata ./bhl-metadata.duckdb
-cargo run --locked --bin bhl -- ./bhl-item-295621.lance ocr/item-295621/ ./bhl-metadata.duckdb
-```
-
-The conversion command opens the database read-only. Multiple jobs can share a
-completed snapshot, provided it is mounted at their configured local path.
-Discovery consumes every listing page and excludes only the directory's aggregate
-TXT file. Other malformed object identities fail. OCR bytes, including empty or
-non-UTF-8 values, remain binary. Metadata relations are lists retaining source
-order and duplicates. Missing/conflicting metadata fails rather than silently
-removing pages. The fingerprint labels the metadata snapshot; the live OCR
-bucket is not frozen by it. These examples use official AWS Open Data, without
-the biodiversitylibrary.org website or API.
+## arXiv with open-arrow-access 0.20.0
 
 Convert one complete official arXiv TAR shard using your normal AWS credential
 configuration. The bucket requires signed requester-pays access:
