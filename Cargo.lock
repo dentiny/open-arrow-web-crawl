@@ -308,6 +308,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "astral-tokio-tar"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "821ed36daf7c40d00a7b62759f9833fb279fb7c87dd989ec0a4d626dcd8d1dca"
+dependencies = [
+ "futures-core",
+ "libc",
+ "portable-atomic",
+ "rustc-hash",
+ "rustix 1.1.6",
+ "tokio",
+ "tokio-stream",
+ "zerocopy",
+]
+
+[[package]]
 name = "async-channel"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3826,9 +3842,9 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
 name = "open-arrow-access"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac5266589a6ec4def2bb41ca29a27f127e32d3c76d0c33462a777b3a7279b3ab"
+checksum = "8c95d82bbea509b4e672bd9da7782eb7f0c9bc2791aea0e2c9c754c5eef999bf"
 dependencies = [
  "arrow-schema",
  "futures",
@@ -3843,9 +3859,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-core"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "961fd753cf8e632cf6605d3303a854eb21e2e06ab5456cd19c54f2af134245d6"
+checksum = "537522a618361c15653d48a31c818219b3970220e1cfd2e578e7a01548f85f62"
 dependencies = [
  "arrow-array",
  "arrow-schema",
@@ -3858,9 +3874,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-dataset"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f2033fe125144d73613a9e7416ee6c25e344e30da6a2e760e81388cb642a6c8"
+checksum = "d08f083895c12477dd4b570d2599ce19783db6f6b23b9ebb4d9bf63c145f38b7"
 dependencies = [
  "arrow-array",
  "arrow-schema",
@@ -3875,21 +3891,24 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-decompression"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9e2d326e2b8f52dfbba8bfef66be94116ad227460652458c7258401056490ff"
+checksum = "03508d8725f62315baba9fd7d5526604bafc0fbc5a5d715d92dd714a92b5d904"
 dependencies = [
+ "astral-tokio-tar",
  "async-compression",
  "futures",
  "open-arrow-access-core",
  "tar",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]
 name = "open-arrow-access-file-format"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bfcf0bc52691ff4829b1c77c1ce273a1132a87af1de39b822e2c51ba0ef83d5"
+checksum = "7894da2597948381cef032511912e09ad0f30980bf621c7edb53fcc3a0f55a00"
 dependencies = [
  "arrow-array",
  "arrow-csv",
@@ -3911,9 +3930,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-layers"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b1f06970071134f893ddca9ec907bfb7dcfc4faf3645afd9ee4f346c64290fb"
+checksum = "5364d7c37f9d8f9fb3f8c831a9e94bf462293c38278bb0dd4e50e9e9ce951ee4"
 dependencies = [
  "arrow-array",
  "arrow-buffer",
@@ -3929,9 +3948,9 @@ dependencies = [
 
 [[package]]
 name = "open-arrow-access-service"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37070ffaf3f8b123868a9b53252dddfa097e95eaa0da79778e4c41c34d9bdc16"
+checksum = "db8de39601732772263ed8b7ab16d5275e365482739e747ce23f6d71acd6972c"
 dependencies = [
  "arrow-array",
  "arrow-cast",
@@ -3959,15 +3978,16 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "tempfile",
  "tokio",
  "url",
 ]
 
 [[package]]
 name = "open-arrow-access-storage"
-version = "0.20.1"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cecb15be70837e4cf34a167946357ba57ccbe89731e983141d087c8713f6735"
+checksum = "6170018555ecbf7a03ece317fa02868baa499d2a9538ebde135649eaf1d78423"
 dependencies = [
  "futures",
  "http",
@@ -5718,6 +5738,7 @@ dependencies = [
  "futures-core",
  "futures-io",
  "futures-sink",
+ "futures-util",
  "libc",
  "pin-project-lite",
  "tokio",
