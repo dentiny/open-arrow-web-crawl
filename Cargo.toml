@@ -6,7 +6,7 @@ publish = false
 license = "MIT"
 
 [dependencies]
-open-arrow-access = { version = "0.21.0", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc", "service-semantic-scholar", "service-arxiv", "service-bhl"] }
+open-arrow-access = { version = "0.21.2", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc", "service-semantic-scholar", "service-arxiv", "service-bhl"] }
 open-arrow-sink = { version = "0.6.4", features = ["sink-lance"] }
 futures = "0.3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
@@ -30,3 +30,7 @@ path = "src/arxiv/main.rs"
 [[bin]]
 name = "bhl"
 path = "src/bhl/main.rs"
+
+[[bin]]
+name = "arxiv-duckdb"
+path = "src/arxiv-duckdb/main.rs"

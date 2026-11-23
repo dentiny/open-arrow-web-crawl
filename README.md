@@ -23,6 +23,7 @@ the pipeline. Start with the pipeline files to see how the library APIs compose:
 | Common Crawl | [common_crawl.rs](src/common_crawl/common_crawl.rs) | Segment discovery, gzip WARC decoding, and LZ4 compression of binary `body` values. |
 | PMC | [pmc.rs](src/pmc/pmc.rs) | Metadata discovery, batch coalescing, field remapping, and downloading article content into Lance blobs. |
 | BHL | [bhl.rs](src/bhl/bhl.rs) | Native item/part discovery, shared read-only metadata and one OCR page per row. |
+| arXiv DuckDB | [arxiv.rs](src/arxiv-duckdb/arxiv.rs) | Stream an official TAR shard with indexed local DuckDB metadata, without OAI requests. |
 | arXiv | [arxiv.rs](src/arxiv/arxiv.rs) | Stream one official source/PDF TAR shard into typed content with automatic OAI metadata. |
 | S2ORC v2 | [s2orc.rs](src/s2orc/s2orc.rs) | Authenticated release discovery, signed download URLs, typed JSONL decoding, and LZ4 compression of `text`. |
 
@@ -179,6 +180,25 @@ configured.
 Existing Common Crawl, PMC and S2ORC pipelines keep their OpenDAL/planning paths.
 Provider Connection downloads in 0.20.1 are sequential; formats requiring random
 access need an OpenDAL-backed or custom ranged source.
+
+## arXiv with local DuckDB metadata
+
+The `arxiv-duckdb` example uses open-arrow-access 0.21.2 and a completed local
+DuckDB snapshot instead of online OAI lookups. See
+[the example guide](src/arxiv-duckdb/README.md) for snapshot details.
+
+```sh
+cargo run --locked --bin arxiv-duckdb -- ./arxiv-source.lance src/arXiv_src_2601_001.tar latex
+cargo run --locked --bin arxiv-duckdb -- ./arxiv-pdf.lance pdf/arXiv_pdf_2601_001.tar pdf
+```
+
+Arguments: `DESTINATION SHARD [latex|pdf] [DATABASE]`. The default database is
+`src/arxiv-duckdb/arxiv.duckdb` relative to the Cargo manifest, independent of the
+working directory. Pass a fourth argument to use another local snapshot.
+The same signed AWS requester-pays access and strict content conversion rules
+as the original arXiv example apply. Metadata setup runs on a blocking worker;
+article readers share the read-only database and query its article ID index.
+Missing or mismatched metadata fails the scan without an OAI fallback.
 
 ## BHL with the native shard accessor
 
