@@ -1,0 +1,1 @@
+src/arxiv-duckdb/arxiv.duckdb.gz.part-* filter=lfs diff=lfs merge=lfs -text

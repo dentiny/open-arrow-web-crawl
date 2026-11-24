@@ -1,0 +1,34 @@
+{
+  "file": "arxiv.duckdb",
+  "bytes": 12255506432,
+  "sha256": "0826e5ceda7a1bc3f9c7ac59f6b762ac2ad93d3c6f045fe93f09ede6ba6c0e72",
+  "source": "https://www.kaggle.com/datasets/Cornell-University/arxiv/versions/313",
+  "records": 3261651,
+  "parts": [
+    {
+      "name": "arxiv.duckdb.gz.part-001",
+      "bytes": 1073741824,
+      "sha256": "b12d6d98990327f31113a7e45f314b5199c24b643884e76458cf6bed55e9c00b"
+    },
+    {
+      "name": "arxiv.duckdb.gz.part-002",
+      "bytes": 1073741824,
+      "sha256": "ff943787ae6104248ee43dda24e100ac137b4082e4407b8d2118ef9be47b80b9"
+    },
+    {
+      "name": "arxiv.duckdb.gz.part-003",
+      "bytes": 1073741824,
+      "sha256": "7f6860aef9c31df57c3617e108f960688fece101d8171684d16a5f99b407a5e0"
+    },
+    {
+      "name": "arxiv.duckdb.gz.part-004",
+      "bytes": 1073741824,
+      "sha256": "fb3ce3906405b2719516fbf0cfb4cc7b476e6c34f6ed71eb8383896c351eccf0"
+    },
+    {
+      "name": "arxiv.duckdb.gz.part-005",
+      "bytes": 84549768,
+      "sha256": "07dafa1828d728fe027d0b2e4ab6f24f4da3fe91d9758b61e692126063ba2f3a"
+    }
+  ]
+}
