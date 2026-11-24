@@ -23,8 +23,30 @@ there is no online fallback. The database needs `main.arxiv_metadata` with an
 indexed, normalized `article_id` and typed `oai:header` / `oai:metadata` structs.
 The output `metadata` struct follows the library's content conversion schema.
 
-The full local snapshot is intentionally Git-ignored. A fresh clone must supply
-its own completed snapshot at this path, or pass `DATABASE` explicitly.
+The complete database is included in this directory as five **Git LFS-tracked**
+gzip parts (4,379,517,064 compressed bytes). Install Git LFS before cloning:
+
+```sh
+git lfs install
+git clone https://github.com/dentiny/open-arrow-web-crawl.git
+cd open-arrow-web-crawl
+```
+
+For an existing clone, run `git lfs pull`. On the first run without `DATABASE`,
+the example verifies each part's size and SHA-256, unpacks the complete database,
+and verifies its full size and SHA-256 before installing `arxiv.duckdb` beside
+this guide. Later runs reuse the local database. An explicit `DATABASE` path is
+used as provided. If a checkout contains only LFS pointers, the example reports
+that `git lfs pull` is needed rather than treating pointers as database content.
+
+Allow an additional 12.3 GB of free disk space for the unpacked database.
+Temporary output is removed on errors; rerun the command to retry setup.
+`metadata-manifest.json` pins every part's name, size, and SHA-256. No OAI request
+or external metadata service is used, and the bundled data is the full snapshot.
+
+GitHub's LFS per-file limit is 2–5 GB depending on the plan, so the 12.3 GB file
+is compressed and split into parts no larger than 1 GiB. See
+[GitHub's LFS file limits](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage).
 
 ## Local snapshot provenance
 

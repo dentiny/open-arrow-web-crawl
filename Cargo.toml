@@ -9,6 +9,11 @@ license = "MIT"
 open-arrow-access = { version = "0.21.2", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc", "service-semantic-scholar", "service-arxiv", "service-bhl"] }
 open-arrow-sink = { version = "0.6.4", features = ["sink-lance"] }
 futures = "0.3"
+flate2 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.11"
+tempfile = "3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [[bin]]

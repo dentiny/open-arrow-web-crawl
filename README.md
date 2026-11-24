@@ -194,7 +194,11 @@ cargo run --locked --bin arxiv-duckdb -- ./arxiv-pdf.lance pdf/arXiv_pdf_2601_00
 
 Arguments: `DESTINATION SHARD [latex|pdf] [DATABASE]`. The default database is
 `src/arxiv-duckdb/arxiv.duckdb` relative to the Cargo manifest, independent of the
-working directory. Pass a fourth argument to use another local snapshot.
+working directory. If it is missing, the first run verifies and unpacks the complete snapshot from
+the Git LFS-tracked gzip parts included in the checkout. Subsequent runs reuse
+the local database. Install Git LFS before cloning, or run `git lfs pull` in an
+existing checkout. Pass a fourth argument to use another
+local snapshot.
 The same signed AWS requester-pays access and strict content conversion rules
 as the original arXiv example apply. Metadata setup runs on a blocking worker;
 article readers share the read-only database and query its article ID index.

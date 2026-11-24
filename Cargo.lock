@@ -4093,9 +4093,14 @@ dependencies = [
 name = "open-arrow-web-crawl"
 version = "0.1.0"
 dependencies = [
+ "flate2",
  "futures",
  "open-arrow-access",
  "open-arrow-sink",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
  "tokio",
 ]
 

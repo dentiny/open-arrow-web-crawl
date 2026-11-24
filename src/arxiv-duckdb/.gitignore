@@ -1,4 +1,0 @@
-# Full local metadata snapshot and DuckDB sidecar files.
-*.duckdb
-*.duckdb.wal
-*.duckdb.tmp/
