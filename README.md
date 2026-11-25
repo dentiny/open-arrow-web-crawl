@@ -69,7 +69,8 @@ read → Arrow batches → write pipeline.
 
 Use a Rust toolchain supporting edition 2024, a C/C++ toolchain, and `protoc` on
 `PATH` for the Lance dependency. [Cargo.toml](Cargo.toml) lists the enabled source
-and sink features.
+and sink features. The `crawl` feature is enabled explicitly because these
+examples compose `CrawlAccessor` and the built-in parallel/coalescing layers.
 
 ```sh
 cargo build --locked --bins
