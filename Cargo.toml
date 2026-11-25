@@ -6,8 +6,8 @@ publish = false
 license = "MIT"
 
 [dependencies]
-open-arrow-access = { version = "0.21.2", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc", "service-semantic-scholar", "service-arxiv", "service-bhl"] }
-open-arrow-sink = { version = "0.6.4", features = ["sink-lance"] }
+open-arrow-access = { version = "0.21.7", features = ["decompression-gzip", "format-warc", "service-warc", "service-pmc", "service-semantic-scholar", "service-arxiv", "service-bhl"] }
+open-arrow-sink = { version = "0.6.5", features = ["sink-lance"] }
 futures = "0.3"
 flate2 = "1"
 serde = { version = "1", features = ["derive"] }
